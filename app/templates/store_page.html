@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1> {{store.location}} </h1>
+    {% for eval in store.evals %}
+        <p> {{eval}} </p>
+    {% endfor %}
+    
+{% endblock %}

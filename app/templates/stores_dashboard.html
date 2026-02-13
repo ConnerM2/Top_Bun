@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for store in stores %}
+        <a href="/stores/{{ store.id }}">
+            <button> {{store.location}} </button>
+        </a>
+    {% endfor %}
+{% endblock %}
