@@ -2,8 +2,12 @@
 
 {% block content %}
     <h1> {{store.location}} </h1>
-    {% for eval in store.evals %}
-        <p> {{eval}} </p>
+    {% for response in store.response %}
+        <ul>
+            <li><a href="/stores/{{store.id}}/res{{response.id}}">response_{{response.timestamp}}</a></li>
+        </ul>
+        
     {% endfor %}
+    <button><a href="{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}">New assessment</a></button>
     
 {% endblock %}

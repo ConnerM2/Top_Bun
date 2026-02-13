@@ -2,4 +2,14 @@
 
 {% block content %}
     <h1>{{assessment.name}}</h1>
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+        {% for question in assessment.questions %}
+        <div>
+            <label for="question_{{ question.id }}">{{question.question}}</label>
+            <textarea name="question_{{ question.id }}" id="question_{{question.id}}" required></textarea>
+        </div>
+        {% endfor %}
+        {{ form.submit() }}
+    </form>
 {% endblock %}

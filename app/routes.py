@@ -1,7 +1,8 @@
-from app import app
+from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
-from flask import render_template, flash, redirect, url_for
-from app.forms import LoginForm
+from flask import render_template, flash, redirect, url_for, request,abort
+from app.forms import LoginForm, AssessmentForm
+from wtforms import StringField
 
 @app.route('/')
 def index():
@@ -23,10 +24,41 @@ def stores():
 @app.route('/stores/<int:store_id>')
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
-    return render_template("store_page.html", store=store)
+    assessment = Assessment.query.first()
+    
+    return render_template("store_page.html", store=store, assessment=assessment)
 
-@app.route('/stores/<int:store_id>/<int:assessment_id>')
+@app.route('/stores/<int:store_id>/res<int:response_id>')
+def view_response(store_id, response_id):
+    store = Store.query.get_or_404(store_id)
+    response = Response.query.get_or_404(response_id)
+
+    if response.store_id != store_id:
+        abort(404)
+
+    assessment = response.assessment
+
+    return render_template("response.html", response=response, strore=store, assessment=assessment)
+
+@app.route('/stores/<int:store_id>/<int:assessment_id>', methods=["GET", "POST"])
 def assessment_page(store_id, assessment_id):
     store = Store.query.get_or_404(store_id)
     assessment = Assessment.query.get_or_404(assessment_id)
-    return render_template("assessment.html", assessment=assessment)
+
+    form = AssessmentForm()
+
+    if form.validate_on_submit():
+        response = Response(assessment_id=assessment.id, store_id=store.id)
+        db.session.add(response)
+        db.session.flush()
+
+        for question in assessment.questions:
+            answer_text = request.form.get(f'question_{question.id}')
+            if answer_text:
+                answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
+                db.session.add(answer)
+        db.session.commit()
+        flash('Assessment submitted successfully!')
+        return redirect(url_for('store_page', store_id=store_id))
+
+    return render_template("assessment.html", assessment=assessment, store=store, form=form)

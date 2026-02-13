@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {%for answer in response.answers%}
+    <p> {{answer.answer}} </p>
+    {% endfor %}    
+    {%for question in assessment.questions%}
+    <p> {{question.question}} </p>
+    {% endfor %}
+{% endblock %}
