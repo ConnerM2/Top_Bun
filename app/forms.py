@@ -16,5 +16,10 @@ class AddStoreForm(FlaskForm):
     location = StringField('Location', validators=[DataRequired()])
     submit = SubmitField("Add Store")
 
-class DeleteForm(FlaskForm):
-    submit = SubmitField("Delete")
+class ArchiveForm(FlaskForm):
+    submit = SubmitField("Archive")
+
+class AddQuestionForm(FlaskForm):
+    question_type = StringField('Question Type', validators=[DataRequired()])
+    question = StringField("Question", validators=[data_required()])
+    submit = SubmitField("Add Question")

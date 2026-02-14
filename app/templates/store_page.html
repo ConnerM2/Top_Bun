@@ -8,7 +8,8 @@
         </ul>
         
     {% endfor %}
-    <button><a href="{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}">New assessment</a></button>
+
+        <button><a href="{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}">New assessment</a></button>
     
     <form action="" method="post">
         {{ form.hidden_tag() }}

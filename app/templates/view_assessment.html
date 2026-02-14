@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for question in assessment.questions %}
+        <p> {{question.question}}</p>
+    {% endfor %}
+
+    <a href=" {{url_for('add_question')}} ">Add Question</a>
+{% endblock %}

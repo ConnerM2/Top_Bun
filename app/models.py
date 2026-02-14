@@ -9,6 +9,10 @@ from flask_login import UserMixin
 class Store(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     location: so.Mapped[str] = so.mapped_column(sa.String(64), index=True, unique=True)
+    
+    #This is a soft delete so you don't loose history
+    is_active: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True, index=True)
+
 
     responses = db.relationship("Response", backref='Store', cascade="all, delete-orphan", passive_deletes=True)
 
@@ -32,11 +36,19 @@ class Question(db.Model):
     assessment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Assessment.id, ondelete="CASCADE"), index=True)
     question_type: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     question: so.Mapped[str] = so.mapped_column(sa.String(128), index=True)
+    is_active: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True, index=True)
+    position: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
 
-    answers = db.relationship("Answer", backref="question")
+    answers = db.relationship("Answer", backref="question", cascade="all, delete-orphan", passive_deletes=True)
+
 
 class Answer(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
+
+    # Links answer to the specific submission (Response)
     response_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Response.id, ondelete="CASCADE"), index=True)
+
+    # Links the answer to the specific question
     question_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Question.id), index=True)
-    answer: so.Mapped[str] = so.mapped_column(sa.String(64))
+    answer: so.Mapped[str] = so.mapped_column(sa.Text, nullable=True)
+    score: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=True)

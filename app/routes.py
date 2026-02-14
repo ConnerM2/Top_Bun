@@ -1,7 +1,7 @@
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort
-from app.forms import LoginForm, AssessmentForm, AddStoreForm, DeleteForm
+from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm
 from wtforms import StringField
 
 @app.route('/')
@@ -37,10 +37,10 @@ def add_store():
 @app.route('/stores/<int:store_id>', methods=["GET", "POST"])
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
-    assessment = Assessment.query.first()
-    form = DeleteForm()
+    assessment = Assessment.query.first() #Add a check to see if assessment exists
+    form = ArchiveForm()
     if form.validate_on_submit():
-        db.session.delete(store)
+        store.is_active = False
         db.session.commit()
         flash("Deleted store")
         return redirect(url_for('stores'))
@@ -51,13 +51,15 @@ def store_page(store_id):
 def view_response(store_id, response_id):
     store = Store.query.get_or_404(store_id)
     response = Response.query.get_or_404(response_id)
+    answers = response.answers
 
     if response.store_id != store_id:
         abort(404)
 
     assessment = response.assessment
+    questions = assessment.questions
 
-    return render_template("response.html", response=response, strore=store, assessment=assessment)
+    return render_template("response.html", response=response, strore=store, assessment=assessment, packed=zip(questions, answers))
 
 @app.route('/stores/<int:store_id>/<int:assessment_id>', methods=["GET", "POST"])
 def assessment_page(store_id, assessment_id):
@@ -81,3 +83,24 @@ def assessment_page(store_id, assessment_id):
         return redirect(url_for('store_page', store_id=store_id))
 
     return render_template("assessment.html", assessment=assessment, store=store, form=form)
+
+@app.route('/assessment')
+def view_assessment():
+    assessment = Assessment.query.first()
+    return render_template("view_assessment.html", assessment=assessment)
+
+@app.route('/assessment/add_question', methods=["GET", "POST"])
+def add_question():
+    assessment = Assessment.query.first()
+    form = AddQuestionForm()
+
+    if form.validate_on_submit():
+        q_type = request.form.get('question_type')
+        q = request.form.get('question')
+        question = Question(assessment_id=1, question_type=q_type, question=q)
+        db.session.add(question)
+
+        db.session.commit()
+        flash("New question added!")
+        return redirect(url_for('view_assessment'))
+    return render_template("add_question.html", form=form, assessment=assessment)

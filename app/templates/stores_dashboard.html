@@ -2,9 +2,11 @@
 
 {% block content %}
     {% for store in stores %}
-        <a href="/stores/{{ store.id }}">
-            <button> {{store.location}} </button>
-        </a>
+        {% if store.is_active %}
+            <a href="/stores/{{ store.id }}">
+                <button> {{store.location}} </button>
+            </a>
+        {% endif %}
     {% endfor %}
 
     <button><a href="{{url_for('add_store')}}">Add New Store</a></button>

@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {%for answer in response.answers%}
-    <p> {{answer.answer}} </p>
-    {% endfor %}    
-    {%for question in assessment.questions%}
-    <p> {{question.question}} </p>
+    {%for question, answer in packed%}
+        <p> {{question.question}}: {{answer.answer}} </p>
     {% endfor %}
 {% endblock %}

@@ -1,8 +1,8 @@
-"""fresh schema with cascaded
+"""Added is_active to store model, change answer to allow for more text, added score to answer if ints are wanted
 
-Revision ID: a714e9a53925
+Revision ID: fbcc5b0cebaf
 Revises: 
-Create Date: 2026-02-13 18:36:55.282680
+Create Date: 2026-02-14 11:51:00.018434
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a714e9a53925'
+revision = 'fbcc5b0cebaf'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,9 +29,11 @@ def upgrade():
     op.create_table('store',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('location', sa.String(length=64), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('store', schema=None) as batch_op:
+        batch_op.create_index(batch_op.f('ix_store_is_active'), ['is_active'], unique=False)
         batch_op.create_index(batch_op.f('ix_store_location'), ['location'], unique=True)
 
     op.create_table('question',
@@ -39,11 +41,14 @@ def upgrade():
     sa.Column('assessment_id', sa.Integer(), nullable=False),
     sa.Column('question_type', sa.String(length=64), nullable=False),
     sa.Column('question', sa.String(length=128), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('position', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['assessment_id'], ['assessment.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('question', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_question_assessment_id'), ['assessment_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_question_is_active'), ['is_active'], unique=False)
         batch_op.create_index(batch_op.f('ix_question_question'), ['question'], unique=False)
         batch_op.create_index(batch_op.f('ix_question_question_type'), ['question_type'], unique=False)
 
@@ -65,7 +70,8 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('response_id', sa.Integer(), nullable=False),
     sa.Column('question_id', sa.Integer(), nullable=False),
-    sa.Column('answer', sa.String(length=64), nullable=False),
+    sa.Column('answer', sa.Text(), nullable=True),
+    sa.Column('score', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['question_id'], ['question.id'], ),
     sa.ForeignKeyConstraint(['response_id'], ['response.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
@@ -93,11 +99,13 @@ def downgrade():
     with op.batch_alter_table('question', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_question_question_type'))
         batch_op.drop_index(batch_op.f('ix_question_question'))
+        batch_op.drop_index(batch_op.f('ix_question_is_active'))
         batch_op.drop_index(batch_op.f('ix_question_assessment_id'))
 
     op.drop_table('question')
     with op.batch_alter_table('store', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_store_location'))
+        batch_op.drop_index(batch_op.f('ix_store_is_active'))
 
     op.drop_table('store')
     with op.batch_alter_table('assessment', schema=None) as batch_op:
