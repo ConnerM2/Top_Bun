@@ -15,3 +15,6 @@ class AssessmentForm(FlaskForm):
 class AddStoreForm(FlaskForm):
     location = StringField('Location', validators=[DataRequired()])
     submit = SubmitField("Add Store")
+
+class DeleteForm(FlaskForm):
+    submit = SubmitField("Delete")

@@ -2,7 +2,7 @@
 
 {% block content %}
     <h1> {{store.location}} </h1>
-    {% for response in store.response %}
+    {% for response in store.responses %}
         <ul>
             <li><a href="/stores/{{store.id}}/res{{response.id}}">response_{{response.timestamp}}</a></li>
         </ul>
@@ -10,4 +10,9 @@
     {% endfor %}
     <button><a href="{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}">New assessment</a></button>
     
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
+         <p> {{form.submit()}} </p>  
+    </form>
+
 {% endblock %}

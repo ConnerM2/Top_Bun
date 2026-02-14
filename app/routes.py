@@ -1,7 +1,7 @@
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort
-from app.forms import LoginForm, AssessmentForm, AddStoreForm
+from app.forms import LoginForm, AssessmentForm, AddStoreForm, DeleteForm
 from wtforms import StringField
 
 @app.route('/')
@@ -34,12 +34,18 @@ def add_store():
         return redirect(url_for('stores'))
     return render_template("add_store.html", form=form)
 
-@app.route('/stores/<int:store_id>')
+@app.route('/stores/<int:store_id>', methods=["GET", "POST"])
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
     assessment = Assessment.query.first()
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(store)
+        db.session.commit()
+        flash("Deleted store")
+        return redirect(url_for('stores'))
     
-    return render_template("store_page.html", store=store, assessment=assessment)
+    return render_template("store_page.html", store=store, assessment=assessment, form=form)
 
 @app.route('/stores/<int:store_id>/res<int:response_id>')
 def view_response(store_id, response_id):

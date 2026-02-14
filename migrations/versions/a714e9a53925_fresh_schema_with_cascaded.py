@@ -1,8 +1,8 @@
-"""Store, assessment, question, response, and answer tables
+"""fresh schema with cascaded
 
-Revision ID: bb39e33dac5e
+Revision ID: a714e9a53925
 Revises: 
-Create Date: 2026-02-12 12:50:38.186327
+Create Date: 2026-02-13 18:36:55.282680
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bb39e33dac5e'
+revision = 'a714e9a53925'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -39,7 +39,7 @@ def upgrade():
     sa.Column('assessment_id', sa.Integer(), nullable=False),
     sa.Column('question_type', sa.String(length=64), nullable=False),
     sa.Column('question', sa.String(length=128), nullable=False),
-    sa.ForeignKeyConstraint(['assessment_id'], ['assessment.id'], ),
+    sa.ForeignKeyConstraint(['assessment_id'], ['assessment.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('question', schema=None) as batch_op:
@@ -53,7 +53,7 @@ def upgrade():
     sa.Column('timestamp', sa.DateTime(), nullable=False),
     sa.Column('store_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['assessment_id'], ['assessment.id'], ),
-    sa.ForeignKeyConstraint(['store_id'], ['store.id'], ),
+    sa.ForeignKeyConstraint(['store_id'], ['store.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('response', schema=None) as batch_op:
@@ -67,7 +67,7 @@ def upgrade():
     sa.Column('question_id', sa.Integer(), nullable=False),
     sa.Column('answer', sa.String(length=64), nullable=False),
     sa.ForeignKeyConstraint(['question_id'], ['question.id'], ),
-    sa.ForeignKeyConstraint(['response_id'], ['response.id'], ),
+    sa.ForeignKeyConstraint(['response_id'], ['response.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('answer', schema=None) as batch_op:
