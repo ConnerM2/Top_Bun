@@ -11,3 +11,7 @@ class LoginForm(FlaskForm):
 
 class AssessmentForm(FlaskForm):
     submit = SubmitField("Submit Assessment")
+
+class AddStoreForm(FlaskForm):
+    location = StringField('Location', validators=[DataRequired()])
+    submit = SubmitField("Add Store")
