@@ -20,7 +20,7 @@ class Assessment(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True, unique=True)
 
-    questions = db.relationship("Question", backref='assessment', cascade="all, delete-orphan", passive_deletes=True)
+    questions = db.relationship("Question", backref='assessment', cascade="all, delete-orphan", passive_deletes=True) 
 
 class Response(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -41,7 +41,6 @@ class Question(db.Model):
 
     answers = db.relationship("Answer", backref="question", cascade="all, delete-orphan", passive_deletes=True)
 
-
 class Answer(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
 
@@ -51,4 +50,4 @@ class Answer(db.Model):
     # Links the answer to the specific question
     question_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Question.id), index=True)
     answer: so.Mapped[str] = so.mapped_column(sa.Text, nullable=True)
-    score: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=True)
+    score: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=True) 
