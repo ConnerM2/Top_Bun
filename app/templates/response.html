@@ -2,6 +2,8 @@
 
 {% block content %}
     {%for question, answer in packed%}
-        <p> {{question.question}}: {{answer.answer}} </p>
+        {% if question.is_active %}
+            <p> {{question.question}} {{question.id}} {{question.is_active}}: {{answer.answer}} </p>
+        {% endif %}
     {% endfor %}
 {% endblock %}

@@ -17,7 +17,7 @@ class Store(db.Model):
     responses = db.relationship("Response", backref='Store', cascade="all, delete-orphan", passive_deletes=True)
 
 class Assessment(db.Model):
-    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    id: so.Mapped[int] = so.mapped_column(primary_key=True) #so.Mapped[int] is a 'type hint' which tells python what type an attribute is
     name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True, unique=True)
 
     questions = db.relationship("Question", backref='assessment', cascade="all, delete-orphan", passive_deletes=True) 

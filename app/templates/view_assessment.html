@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for question in assessment.questions %}
-        <p> {{question.question}}</p>
+    {% for question in questions %}
+        <p> {{question.question}} 
+            <form action="", method="post">
+                {{ form.hidden_tag() }}
+                <button id="", name="question_id", value="{{question.id}}" type="submit">Delete Q_{{question.position}}</button>
+            </form> 
+        </p> 
     {% endfor %}
 
     <a href=" {{url_for('add_question')}} ">Add Question</a>

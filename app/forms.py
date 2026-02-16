@@ -19,6 +19,9 @@ class AddStoreForm(FlaskForm):
 class ArchiveForm(FlaskForm):
     submit = SubmitField("Archive")
 
+class ArchiveQuestions(FlaskForm):
+    submit = SubmitField("Archive")
+
 class AddQuestionForm(FlaskForm):
     question_type = StringField('Question Type', validators=[DataRequired()])
     question = StringField("Question", validators=[data_required()])

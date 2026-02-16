@@ -1,7 +1,7 @@
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort
-from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm
+from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions
 from wtforms import StringField
 
 @app.route('/')
@@ -59,7 +59,7 @@ def view_response(store_id, response_id):
     assessment = response.assessment
     questions = assessment.questions
 
-    return render_template("response.html", response=response, strore=store, assessment=assessment, packed=zip(questions, answers))
+    return render_template("response.html", response=response, store=store, assessment=assessment, packed=zip(questions, answers))
 
 @app.route('/stores/<int:store_id>/<int:assessment_id>', methods=["GET", "POST"])
 def assessment_page(store_id, assessment_id):
@@ -73,7 +73,7 @@ def assessment_page(store_id, assessment_id):
         db.session.add(response)
         db.session.flush()
 
-        for question in assessment.questions:
+        for question in assessment.questions.filter_by(is_active=True).order_by(Question.position): 
             answer_text = request.form.get(f'question_{question.id}')
             if answer_text:
                 answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
@@ -84,20 +84,33 @@ def assessment_page(store_id, assessment_id):
 
     return render_template("assessment.html", assessment=assessment, store=store, form=form)
 
-@app.route('/assessment')
+@app.route('/assessment', methods=["GET", "POST"])
 def view_assessment():
     assessment = Assessment.query.first()
-    return render_template("view_assessment.html", assessment=assessment)
+    questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all()
+    # Using query allows you to use filter_by
+    form = ArchiveQuestions()
+
+    if form.validate_on_submit():
+        question_id = request.form.get('question_id')
+        question = Question.query.get_or_404(question_id)
+        question.is_active = False
+        question.position = 0
+        db.session.commit()
+        return redirect(url_for("view_assessment"))
+    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form)
 
 @app.route('/assessment/add_question', methods=["GET", "POST"])
 def add_question():
     assessment = Assessment.query.first()
+    positions = Question.query.get(position).all()
     form = AddQuestionForm()
 
     if form.validate_on_submit():
         q_type = request.form.get('question_type')
         q = request.form.get('question')
-        question = Question(assessment_id=1, question_type=q_type, question=q)
+        position = max(positions) + 1
+        question = Question(assessment_id=1, question_type=q_type, question=q, position=position)
         db.session.add(question)
 
         db.session.commit()
