@@ -3,6 +3,7 @@ from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort
 from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions
 from wtforms import StringField
+from sqlalchemy import func
 
 @app.route('/')
 def index():
@@ -57,15 +58,16 @@ def view_response(store_id, response_id):
         abort(404)
 
     assessment = response.assessment
-    questions = assessment.questions
+    questions = Question.query.filter_by(assessment_id=assessment.id).order_by(Question.position).all()
+    answers_dict = {answer.question_id: answer for answer in answers}
 
-    return render_template("response.html", response=response, store=store, assessment=assessment, packed=zip(questions, answers))
+    return render_template("response.html", response=response, store=store, assessment=assessment, questions=questions, answers_dict=answers_dict)
 
 @app.route('/stores/<int:store_id>/<int:assessment_id>', methods=["GET", "POST"])
 def assessment_page(store_id, assessment_id):
     store = Store.query.get_or_404(store_id)
     assessment = Assessment.query.get_or_404(assessment_id)
-
+    questions = Question.query.filter_by(is_active=True, assessment_id=assessment.id).order_by(Question.position).all()
     form = AssessmentForm()
 
     if form.validate_on_submit():
@@ -73,7 +75,7 @@ def assessment_page(store_id, assessment_id):
         db.session.add(response)
         db.session.flush()
 
-        for question in assessment.questions.filter_by(is_active=True).order_by(Question.position): 
+        for question in questions: 
             answer_text = request.form.get(f'question_{question.id}')
             if answer_text:
                 answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
@@ -82,7 +84,7 @@ def assessment_page(store_id, assessment_id):
         flash('Assessment submitted successfully!')
         return redirect(url_for('store_page', store_id=store_id))
 
-    return render_template("assessment.html", assessment=assessment, store=store, form=form)
+    return render_template("assessment.html", assessment=assessment, store=store, form=form, questions=questions)
 
 @app.route('/assessment', methods=["GET", "POST"])
 def view_assessment():
@@ -103,13 +105,13 @@ def view_assessment():
 @app.route('/assessment/add_question', methods=["GET", "POST"])
 def add_question():
     assessment = Assessment.query.first()
-    positions = Question.query.get(position).all()
+    max_position = db.session.query(func.max(Question.position)).filter(Question.assessment_id == assessment.id).scalar()
     form = AddQuestionForm()
 
     if form.validate_on_submit():
         q_type = request.form.get('question_type')
         q = request.form.get('question')
-        position = max(positions) + 1
+        position = (max_position or 0) + 1
         question = Question(assessment_id=1, question_type=q_type, question=q, position=position)
         db.session.add(question)
 

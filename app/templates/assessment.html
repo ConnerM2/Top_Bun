@@ -4,13 +4,11 @@
     <h1>{{assessment.name}}</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        {% for question in assessment.questions %}
-        {% if question.is_active %}
+        {% for question in questions %}
         <div>
             <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
             <textarea name="question_{{ question.id }}" id="question_{{question.id}}" required></textarea>
         </div>
-        {% endif %}
         {% endfor %}
         {{ form.submit() }}
     </form>
