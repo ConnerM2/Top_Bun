@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
 from wtforms.validators import DataRequired, data_required
 
 class LoginForm(FlaskForm):
@@ -23,6 +23,6 @@ class ArchiveQuestions(FlaskForm):
     submit = SubmitField("Archive")
 
 class AddQuestionForm(FlaskForm):
-    question_type = StringField('Question Type', validators=[DataRequired()])
+    question_type = SelectField('Question Type', choices=[('drop_down', 'Score 1-5'), ("yes_no", "Check Box"), ("text", "Text")], validators=[DataRequired()])
     question = StringField("Question", validators=[data_required()])
     submit = SubmitField("Add Question")

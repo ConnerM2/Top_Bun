@@ -3,17 +3,33 @@
 {% block content %}
     <h1> {{store.location}} </h1>
     {% for response in store.responses %}
-        <ul>
-            <li><a href="/stores/{{store.id}}/res{{response.id}}">response_{{response.timestamp}}</a></li>
-        </ul>
-        
-    {% endfor %}
-
-        <button><a href="{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}">New assessment</a></button>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <ul class="list-group">
+                    <li class="list-group-item"><a href="/stores/{{store.id}}/res{{response.id}}" style="text-decoration: none;">response_{{response.timestamp}} </a></li>
+                </ul>  
+            </div>
+            <div class="col">
+                response_{{response.timestamp}}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="row">
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" onclick="window.location.href='{{url_for('assessment_page', store_id=store.id, assessment_id=assessment.id)}}'">New assessment</button>
+            </div>
+            <div class="col">
+                <form action="" method="post">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn btn-danger">Archive Store</button> 
+                </form>    
+            </div>
+                                
+        </div>
+    </div>
     
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-         <p> {{form.submit()}} </p>  
-    </form>
+    
+
 
 {% endblock %}

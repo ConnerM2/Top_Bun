@@ -6,8 +6,23 @@
         {{ form.hidden_tag() }}
         {% for question in questions %}
         <div>
+            {% if question.question_type == "text" %} <!--Current text question have Text as text_type, that is why they dont show up-->
             <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
             <textarea name="question_{{ question.id }}" id="question_{{question.id}}" required></textarea>
+            {% elif question.question_type == "yes_no" %}
+            <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
+            <input type="checkbox" name="question_{{ question.id }}" id="question_{{ question.id }}">
+            {% elif question.question_type == "drop_down" %}
+            <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
+            <select name="question_{{ question.id }}" id="question_{{ question.id }}">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            {% endif %}
+
         </div>
         {% endfor %}
         {{ form.submit() }}

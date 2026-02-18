@@ -5,6 +5,12 @@ from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQ
 from wtforms import StringField
 from sqlalchemy import func
 
+@app.context_processor
+def get_stores():
+    stores = Store.query.all()
+    stores = {'stores': stores}
+    return stores
+
 @app.route('/')
 def index():
     return render_template('index.html', title="Home")
@@ -32,19 +38,20 @@ def add_store():
             db.session.add(store)
         db.session.commit()
         flash('New Store Added')
-        return redirect(url_for('stores'))
+        return redirect(url_for('index'))
     return render_template("add_store.html", form=form)
 
 @app.route('/stores/<int:store_id>', methods=["GET", "POST"])
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
     assessment = Assessment.query.first() #Add a check to see if assessment exists
+    
     form = ArchiveForm()
     if form.validate_on_submit():
         store.is_active = False
         db.session.commit()
         flash("Deleted store")
-        return redirect(url_for('stores'))
+        return redirect(url_for('index'))
     
     return render_template("store_page.html", store=store, assessment=assessment, form=form)
 
@@ -75,8 +82,17 @@ def assessment_page(store_id, assessment_id):
         db.session.add(response)
         db.session.flush()
 
-        for question in questions: 
-            answer_text = request.form.get(f'question_{question.id}')
+        for question in questions:
+            if question.question_type == "yes_no":
+                yes_no = request.form.get(f'question_{question.id}')
+                if yes_no == None:
+                    answer_text = 'No'
+                else:
+                    answer_text = 'Yes'
+            elif question.question_type == "text":
+                answer_text = request.form.get(f'question_{question.id}')
+            else:
+                answer_text = request.form.get(f'question_{question.id}')
             if answer_text:
                 answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
                 db.session.add(answer)
@@ -112,7 +128,7 @@ def add_question():
         q_type = request.form.get('question_type')
         q = request.form.get('question')
         position = (max_position or 0) + 1
-        question = Question(assessment_id=1, question_type=q_type, question=q, position=position)
+        question = Question(assessment_id=assessment.id, question_type=q_type, question=q, position=position)
         db.session.add(question)
 
         db.session.commit()

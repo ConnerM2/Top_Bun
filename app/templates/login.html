@@ -1,27 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Sign In</h1>
-    <form action="" method="post" novalidate>
+    <h1 class="mb-4">Sign In</h1>
+    <form action="" method="post" novalidate class="w-100" style="max-width: 24rem;">
         {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }} <br>
-            {{ form.username(size=32) }}
+        <div class="mb-3">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(size=32, class="form-control") }}
             {% for error in form.username.errors %}
-            <span>[{{error}}]</span>
+            <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }} <br>
-            {{ form.password(size=32) }}
-            {% for error in form.username.errors %}
-            <span>[{{error}}]</span>
+        </div>
+        <div class="mb-3">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(size=32, class="form-control") }}
+            {% for error in form.password.errors %}
+            <div class="invalid-feedback d-block">{{ error }}</div>
             {% endfor %}
-        </p>
-        <p>{{ form.remember_me() }} {{form.remember_me.label }}</p>
-        <p>{{form.submit()}}</p>
+        </div>
+        <div class="mb-3 form-check">
+            {{ form.remember_me(class="form-check-input") }}
+            {{ form.remember_me.label(class="form-check-label") }}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
     </form>
-
 {% endblock %}
-
-5/res8
