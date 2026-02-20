@@ -1,6 +1,6 @@
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
-from flask import render_template, flash, redirect, url_for, request,abort
+from flask import render_template, flash, redirect, url_for, request,abort, jsonify
 from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions
 from wtforms import StringField
 from sqlalchemy import func
@@ -78,7 +78,7 @@ def assessment_page(store_id, assessment_id):
     form = AssessmentForm()
 
     if form.validate_on_submit():
-        response = Response(assessment_id=assessment.id, store_id=store.id)
+        response = Response(assessment_id=assessment.id, store_id=store.id, form_type="day")
         db.session.add(response)
         db.session.flush()
 
@@ -96,6 +96,7 @@ def assessment_page(store_id, assessment_id):
             if answer_text:
                 answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
                 db.session.add(answer)
+        response.calculate_score()
         db.session.commit()
         flash('Assessment submitted successfully!')
         return redirect(url_for('store_page', store_id=store_id))
@@ -135,3 +136,14 @@ def add_question():
         flash("New question added!")
         return redirect(url_for('view_assessment'))
     return render_template("add_question.html", form=form, assessment=assessment)
+
+@app.route("/update-order", methods=["POST"])
+def update_order():
+    data = request.get_json()
+
+    for item in data:
+        question = Question.query.get(item["id"])
+        question.position = item["position"]
+
+    db.session.commit()
+    return jsonify({"status": "success"})

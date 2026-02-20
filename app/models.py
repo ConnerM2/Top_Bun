@@ -1,5 +1,6 @@
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone, tzinfo
 from typing import Optional
+from zoneinfo import ZoneInfo
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from app import db
@@ -25,11 +26,30 @@ class Assessment(db.Model):
 class Response(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     assessment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Assessment.id), index=True)
-    timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now(timezone.utc))
+    timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now())
+    report_month: so.Mapped[date] = so.mapped_column(sa.Date,nullable=False, index=True, default=lambda: date.today().replace(day=1))
+    yes_count: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
+    question_count: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
+    percent_score: so.Mapped[float] = so.mapped_column(sa.Float, default=0)
+    form_type: so.Mapped[str] = so.mapped_column(sa.String(16), index=True)
     store_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Store.id, ondelete="CASCADE"), index=True)
-
     answers = db.relationship("Answer", backref="responses", cascade="all, delete-orphan", passive_deletes=True)
     assessment = db.relationship("Assessment")
+
+    __table_args__ = (sa.UniqueConstraint("store_id", "form_type", "report_month", name="uq_response_store_form_month"),)
+
+    def calculate_score(self):
+        total = 0
+        score = 0
+
+        for answer in self.answers:
+            if answer.question and answer.question.question_type == "yes_no":
+                total += 1
+                if (answer.answer or "").strip().lower() == "yes":
+                    score += 1
+        self.question_count = total
+        self.yes_count = score
+        self.percent_score = (score / total) * 100
 
 class Question(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)

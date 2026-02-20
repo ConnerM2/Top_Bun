@@ -1,14 +1,73 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% for question in questions %}
-        <p> {{question.question}} position: {{question.position}}
-            <form action="", method="post">
-                {{ form.hidden_tag() }}
-                <button id="", name="question_id", value="{{question.id}}" type="submit">Delete Q_{{ loop.index }}  </button>
-            </form> 
-        </p> 
-    {% endfor %}
+<div class="container">
 
-    <a href=" {{url_for('add_question')}} ">Add Question</a>
+    <!-- This is the ONE sortable container -->
+    <div id="question-list" class="list-group">
+
+        {% for question in questions %}
+        <div class="list-group-item d-flex justify-content-between align-items-center"
+             data-id="{{ question.id }}">
+
+            <div>
+                {{ question.question }}
+                <small class="text-muted">({{ question.position }})</small>
+            </div>
+
+            <form method="post">
+                {{ form.hidden_tag() }}
+                <button class="btn btn-danger btn-sm"
+                        name="question_id"
+                        value="{{ question.id }}"
+                        type="submit">
+                    Delete
+                </button>
+            </form>
+
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('add_question') }}" class="btn btn-primary">
+            Add Question
+        </a>
+    </div>
+
+</div>
 {% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+<script>
+  const el = document.getElementById('question-list');
+
+  new Sortable(el, {
+    animation: 150,
+    onEnd: function () {
+
+      const items = el.children;
+      const order = [];
+
+      for (let i = 0; i < items.length; i++) {
+        order.push({
+          id: items[i].dataset.id,
+          position: i
+        });
+      }
+
+      fetch("/update-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(order)
+      });
+    }
+  });
+</script>
+{% endblock %}
+

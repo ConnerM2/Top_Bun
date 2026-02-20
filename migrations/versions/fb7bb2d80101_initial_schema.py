@@ -1,8 +1,8 @@
-"""Added is_active to store model, change answer to allow for more text, added score to answer if ints are wanted
+"""initial schema
 
-Revision ID: fbcc5b0cebaf
+Revision ID: fb7bb2d80101
 Revises: 
-Create Date: 2026-02-14 11:51:00.018434
+Create Date: 2026-02-20 11:15:26.432473
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fbcc5b0cebaf'
+revision = 'fb7bb2d80101'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -56,13 +56,21 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('assessment_id', sa.Integer(), nullable=False),
     sa.Column('timestamp', sa.DateTime(), nullable=False),
+    sa.Column('report_month', sa.Date(), nullable=False),
+    sa.Column('yes_count', sa.Integer(), nullable=False),
+    sa.Column('question_count', sa.Integer(), nullable=False),
+    sa.Column('percent_score', sa.Float(), nullable=False),
+    sa.Column('form_type', sa.String(length=16), nullable=False),
     sa.Column('store_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['assessment_id'], ['assessment.id'], ),
     sa.ForeignKeyConstraint(['store_id'], ['store.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('store_id', 'form_type', 'report_month', name='uq_response_store_form_month')
     )
     with op.batch_alter_table('response', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_response_assessment_id'), ['assessment_id'], unique=False)
+        batch_op.create_index(batch_op.f('ix_response_form_type'), ['form_type'], unique=False)
+        batch_op.create_index(batch_op.f('ix_response_report_month'), ['report_month'], unique=False)
         batch_op.create_index(batch_op.f('ix_response_store_id'), ['store_id'], unique=False)
         batch_op.create_index(batch_op.f('ix_response_timestamp'), ['timestamp'], unique=False)
 
@@ -93,6 +101,8 @@ def downgrade():
     with op.batch_alter_table('response', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_response_timestamp'))
         batch_op.drop_index(batch_op.f('ix_response_store_id'))
+        batch_op.drop_index(batch_op.f('ix_response_report_month'))
+        batch_op.drop_index(batch_op.f('ix_response_form_type'))
         batch_op.drop_index(batch_op.f('ix_response_assessment_id'))
 
     op.drop_table('response')

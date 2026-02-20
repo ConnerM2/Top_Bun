@@ -4,17 +4,20 @@
     <h1>{{assessment.name}}</h1>
     <form action="" method="post">
         {{ form.hidden_tag() }}
-        {% for question in questions %}
-        <div>
+        
+        <div class="container">
+            {% for question in questions %}
             {% if question.question_type == "text" %} <!--Current text question have Text as text_type, that is why they dont show up-->
-            <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
-            <textarea name="question_{{ question.id }}" id="question_{{question.id}}" required></textarea>
+            <label for="question_{{ question.id }}" class="form-label">{{ loop.index }}. {{question.question}}</label>
+            <textarea name="question_{{ question.id }}" id="question_{{question.id}}" class="form-control" required></textarea>
             {% elif question.question_type == "yes_no" %}
-            <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
-            <input type="checkbox" name="question_{{ question.id }}" id="question_{{ question.id }}">
+            <div class="form-check">
+                <label for="question_{{ question.id }}" class="form-check-label">{{loop.index}}. {{question.question}}</label>
+                <input type="checkbox" name="question_{{ question.id }}" id="question_{{ question.id }}" class="form-check-input">
+            </div>
             {% elif question.question_type == "drop_down" %}
-            <label for="question_{{ question.id }}">Question {{question.position}}. {{question.question}}</label>
-            <select name="question_{{ question.id }}" id="question_{{ question.id }}">
+            <label for="question_{{ question.id }}" class="form-label">{{loop.index}}. {{question.question}}</label>
+            <select name="question_{{ question.id }}" id="question_{{ question.id }}" class="form-select">
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -23,8 +26,9 @@
             </select>
             {% endif %}
 
+       
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Submit Assessment</button> 
         </div>
-        {% endfor %}
-        {{ form.submit() }}
     </form>
 {% endblock %}
