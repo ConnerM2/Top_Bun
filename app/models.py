@@ -27,7 +27,8 @@ class Response(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     assessment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Assessment.id), index=True)
     timestamp: so.Mapped[datetime] = so.mapped_column(index=True, default=lambda: datetime.now())
-    report_month: so.Mapped[date] = so.mapped_column(sa.Date,nullable=False, index=True, default=lambda: date.today().replace(day=1))
+    report_month: so.Mapped[int] = so.mapped_column(sa.Integer, index=True, default=0)
+    # Change report month nullable to True and just set default to 0, I want the user to be able to enter the month/ year
     yes_count: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
     question_count: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
     percent_score: so.Mapped[float] = so.mapped_column(sa.Float, default=0)
@@ -36,7 +37,7 @@ class Response(db.Model):
     answers = db.relationship("Answer", backref="responses", cascade="all, delete-orphan", passive_deletes=True)
     assessment = db.relationship("Assessment")
 
-    __table_args__ = (sa.UniqueConstraint("store_id", "form_type", "report_month", name="uq_response_store_form_month"),)
+    __table_args__ = (sa.UniqueConstraint("store_id", "assessment_id", "form_type", "report_month", name="uq_response_store_form_month"),)
 
     def calculate_score(self):
         total = 0

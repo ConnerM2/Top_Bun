@@ -1,9 +1,26 @@
+from werkzeug.wrappers import response
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort, jsonify
-from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions
+from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions, SelectForm, MonthYearForm
 from wtforms import StringField
-from sqlalchemy import func
+from sqlalchemy import engine, func
+from datetime import date, datetime
+
+
+def get_month_year_choices():
+    """Last 12 months as (value, label), e.g. ('2026-02', 'Feb 2026'). Auto-updates with current date."""
+    today = date.today()
+    year, month = today.year, today.month
+    choices = []
+    for _ in range(12):
+        d = date(year, month, 1)
+        choices.append((d.strftime('%Y-%m'), d.strftime('%b %Y')))
+        if month == 1:
+            month, year = 12, year - 1
+        else:
+            month -= 1
+    return choices
 
 @app.context_processor
 def get_stores():
@@ -13,7 +30,7 @@ def get_stores():
 
 @app.route('/')
 def index():
-    return render_template('index.html', title="Home")
+    return render_template('index.html', title="Top Bun")
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -22,6 +39,22 @@ def login():
         flash('Logged in!')
         return redirect(url_for('index'))
     return render_template('login.html', title="Login", form=form)
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    form = MonthYearForm()
+    form.month_year.choices = get_month_year_choices()
+    my_date = date.today().replace(day=1)  # default: current month
+    if form.validate_on_submit():
+        value = form.month_year.data  # e.g. '2026-02'
+        if value:
+            y, m = int(value[:4]), int(value[5:7])
+            my_date = date(y, m, 1)
+    elif request.method == 'GET' and not form.month_year.data:
+        form.month_year.data = my_date.strftime('%Y-%m')  # preselect current month
+    responses = Response.query.filter(Response.report_month == my_date).all()
+    stores = Store.query.all()
+    return render_template("dashboard.html", responses=responses, stores=stores, date=my_date, form=form)
 
 @app.route('/stores')
 def stores():
@@ -44,16 +77,30 @@ def add_store():
 @app.route('/stores/<int:store_id>', methods=["GET", "POST"])
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
-    assessment = Assessment.query.first() #Add a check to see if assessment exists
+    select_form = SelectForm()
+    select_form.month_year.choices = get_month_year_choices()
+    select_form.assessments.choices = [(a.id, a.name) for a in Assessment.query.all()]
+    #drop down menus have two options. (value: what is sent to backend, label: what the user sees)
+
+    if select_form.validate_on_submit():
+        form_type = select_form.form_type.data
+        assessment_id = select_form.assessments.data
+        value = select_form.month_year.data
+        if value:
+            y, m = int(value[:4]), int(value[5:7])
+            my_date = date(y, m, 1)
+
+        return redirect(url_for('assessment_page', store_id=store.id, form_type=form_type, assessment_id=assessment_id, my_date=my_date))
+
     
-    form = ArchiveForm()
-    if form.validate_on_submit():
+    archive = ArchiveForm()
+    if archive.validate_on_submit():
         store.is_active = False
         db.session.commit()
         flash("Deleted store")
         return redirect(url_for('index'))
     
-    return render_template("store_page.html", store=store, assessment=assessment, form=form)
+    return render_template("store_page.html", store=store, archive=archive, select_form=select_form)
 
 @app.route('/stores/<int:store_id>/res<int:response_id>')
 def view_response(store_id, response_id):
@@ -73,33 +120,41 @@ def view_response(store_id, response_id):
 @app.route('/stores/<int:store_id>/<int:assessment_id>', methods=["GET", "POST"])
 def assessment_page(store_id, assessment_id):
     store = Store.query.get_or_404(store_id)
-    assessment = Assessment.query.get_or_404(assessment_id)
+    form_type = request.args.get('form_type')
+    date = request.args.get('my_date')
+    assessment = db.session.get(Assessment, assessment_id)
+    
     questions = Question.query.filter_by(is_active=True, assessment_id=assessment.id).order_by(Question.position).all()
     form = AssessmentForm()
 
     if form.validate_on_submit():
-        response = Response(assessment_id=assessment.id, store_id=store.id, form_type="day")
+        response = Response(assessment_id=assessment.id, store_id=store.id, form_type=form_type, report_month=date)
         db.session.add(response)
-        db.session.flush()
-
-        for question in questions:
-            if question.question_type == "yes_no":
-                yes_no = request.form.get(f'question_{question.id}')
-                if yes_no == None:
-                    answer_text = 'No'
+        try:
+            db.session.commit()
+            flash("Response created successfully", "success")
+            for question in questions:
+                if question.question_type == "yes_no":
+                    yes_no = request.form.get(f'question_{question.id}')
+                    if yes_no == None:
+                        answer_text = 'No'
+                    else:
+                        answer_text = 'Yes'
+                elif question.question_type == "text":
+                    answer_text = request.form.get(f'question_{question.id}')
                 else:
-                    answer_text = 'Yes'
-            elif question.question_type == "text":
-                answer_text = request.form.get(f'question_{question.id}')
-            else:
-                answer_text = request.form.get(f'question_{question.id}')
-            if answer_text:
-                answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
-                db.session.add(answer)
-        response.calculate_score()
-        db.session.commit()
-        flash('Assessment submitted successfully!')
-        return redirect(url_for('store_page', store_id=store_id))
+                    answer_text = request.form.get(f'question_{question.id}')
+                if answer_text:
+                    answer = Answer(response_id=response.id, question_id=question.id, answer=answer_text)
+                    db.session.add(answer)
+            response.calculate_score()
+            db.session.commit()
+            flash('Assessment submitted successfully!')
+            return redirect(url_for('store_page', store_id=store_id))
+        except:
+            db.session.rollback()
+            flash("Error: response already created for this store and time")
+            return redirect(url_for('store_page', store_id=store_id))
 
     return render_template("assessment.html", assessment=assessment, store=store, form=form, questions=questions)
 

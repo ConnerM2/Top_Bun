@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <form method="post" action="{{ url_for('dashboard') }}" class="mb-4">
+        {{ form.hidden_tag() }}
+        {{ form.month_year.label }} {{ form.month_year }}
+        {{ form.submit() }}
+    </form>
+
+    {% for response in responses %}
+    {% for store in stores %}
+    {% if store.id == response.store_id %}
+    <p>{{ store.location }} Num of Questions: {{response.question_count}} Number of yes: {{response.yes_count}}  score: {{ response.percent_score }} {{ response.report_month }}</p>
+    {% endif %}
+    {% endfor %}
+    {% endfor %}
+
+{% endblock %}
