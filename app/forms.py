@@ -28,10 +28,14 @@ class AddQuestionForm(FlaskForm):
     submit = SubmitField("Add Question")
 
 class SelectForm(FlaskForm):
-    form_type = SelectField('Form Type', choices=[('day', 'Day'), ('night', 'Night'), ('online', 'Online')])
+    form_type = SelectField('Form Type', choices=[('day', 'Day'), ('night', 'Night'), ('online', 'Online'), ('extra', 'Extra')])
     assessments = SelectField('Assessment', choices=[], validators=[DataRequired()])
     month_year = SelectField('Month', choices=[], validators=[DataRequired()])
     submit = SubmitField("Select Form")
+
+class AssessmentSelectForm(FlaskForm):
+    choice_assessment = SelectField('Assessments', choices=[], validators=[DataRequired()])
+    submit = SubmitField("Go")
 
 class MonthYearForm(FlaskForm):
     """Month/year dropdown - choices are set in the view to last 12 months."""

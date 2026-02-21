@@ -8,12 +8,45 @@
         {{ form.submit() }}
     </form>
 
-    {% for response in responses %}
-    {% for store in stores %}
-    {% if store.id == response.store_id %}
-    <p>{{ store.location }} Num of Questions: {{response.question_count}} Number of yes: {{response.yes_count}}  score: {{ response.percent_score }} {{ response.report_month }}</p>
-    {% endif %}
-    {% endfor %}
-    {% endfor %}
+
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Store</th>
+            <th scope="col">Day Score</th>
+            <th scope="col">Night Score</th>
+            <th scope="col">Online Score</th>
+            <th scope="col">Steritech Score</th>
+            <th scope="col">Crew Meeting</th>
+            <th scope="col">Catering</th>
+            <th scope="col">Complaints</th>
+            <th scope="col">Compliments</th>
+            <th scope="col">U of S Score EOW2</th>
+            <th scope="col">U of S Score EOW4</th>
+            <th scope="col">Productivity Score</th>
+            <th scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for store in stores %}
+        <tr>
+          <th scope="row">{{ store.location }}</th>
+          <td>{% if store.id in day_score_by_store %}{{ day_score_by_store[store.id] }}{% else %}—{% endif %}</td>
+          <td>{% if store.id in night_score_by_store %}{{night_score_by_store[store.id]}}{%else%}—{%endif%}  </td>
+          <td>{% if store.id in online %}{{online[store.id]}}{%else%}—{%endif%}  </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+          <td> — </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
 
 {% endblock %}

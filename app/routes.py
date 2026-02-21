@@ -2,7 +2,7 @@ from werkzeug.wrappers import response
 from app import app, db
 from app.models import Store, Assessment, Question, Response, Answer
 from flask import render_template, flash, redirect, url_for, request,abort, jsonify
-from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions, SelectForm, MonthYearForm
+from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQuestionForm, ArchiveQuestions, SelectForm, MonthYearForm, AssessmentSelectForm
 from wtforms import StringField
 from sqlalchemy import engine, func
 from datetime import date, datetime
@@ -53,8 +53,42 @@ def dashboard():
     elif request.method == 'GET' and not form.month_year.data:
         form.month_year.data = my_date.strftime('%Y-%m')  # preselect current month
     responses = Response.query.filter(Response.report_month == my_date).all()
-    stores = Store.query.all()
-    return render_template("dashboard.html", responses=responses, stores=stores, date=my_date, form=form)
+    stores = Store.query.filter_by(is_active=True).all()
+
+    # One column example: "Day Score" = score for form_type "day" per store
+    # Build a lookup: store_id -> percent_score (only for responses that exist)
+    # extra_evals_by_store = {}
+    # for r in responses:
+    #     if r.from_type == "extra":
+    #         extra_evals_by_store[r.store_id] = r.answer
+
+    day_score_by_store = {}
+    for r in responses:
+        if r.form_type == "day":
+            day_score_by_store[r.store_id] = r.percent_score
+
+    night_score_by_store = {}
+    for r in responses:
+        if r.form_type == "night":
+            night_score_by_store[r.store_id] = r.percent_score
+
+    online_score_by_store = {}
+    for r in responses:
+        if r.form_type == "online":
+            online_score_by_store[r.store_id] = r.percent_score
+    
+    
+
+    return render_template(
+        "dashboard.html",
+        responses=responses,
+        stores=stores,
+        date=my_date,
+        form=form,
+        day_score_by_store=day_score_by_store,
+        night_score_by_store=night_score_by_store,
+        online_score_by_store=online_score_by_store
+    )
 
 @app.route('/stores')
 def stores():
@@ -160,9 +194,29 @@ def assessment_page(store_id, assessment_id):
 
 @app.route('/assessment', methods=["GET", "POST"])
 def view_assessment():
-    assessment = Assessment.query.first()
-    questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all()
-    # Using query allows you to use filter_by
+    # Use assessment_id from URL so selection persists across redirects and refreshes
+    assessment_id = request.args.get('assessment_id', type=int)
+    if assessment_id is not None:
+        assessment = db.session.get(Assessment, assessment_id)
+        if assessment is None:
+            assessment_id = None
+    if assessment_id is None:
+        assessment = Assessment.query.first()
+        if assessment is not None:
+            assessment_id = assessment.id
+
+    select_ass = AssessmentSelectForm()
+    select_ass.choice_assessment.choices = [(a.id, a.name) for a in Assessment.query.all()]
+    if select_ass.validate_on_submit():
+        # User chose a different assessment from dropdown — redirect so URL has it
+        new_id = select_ass.choice_assessment.data
+        return redirect(url_for("view_assessment", assessment_id=new_id))
+
+    # Keep dropdown showing the current assessment
+    if assessment is not None:
+        select_ass.choice_assessment.data = assessment.id
+
+    questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all() if assessment else []
     form = ArchiveQuestions()
 
     if form.validate_on_submit():
@@ -171,12 +225,12 @@ def view_assessment():
         question.is_active = False
         question.position = 0
         db.session.commit()
-        return redirect(url_for("view_assessment"))
-    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form)
+        return redirect(url_for("view_assessment", assessment_id=assessment.id))
+    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form, select_ass=select_ass)
 
-@app.route('/assessment/add_question', methods=["GET", "POST"])
-def add_question():
-    assessment = Assessment.query.first()
+@app.route('/assessment/<int:assessment_id>/add_question', methods=["GET", "POST"])
+def add_question(assessment_id):
+    assessment = db.session.get(Assessment, assessment_id)
     max_position = db.session.query(func.max(Question.position)).filter(Question.assessment_id == assessment.id).scalar()
     form = AddQuestionForm()
 
@@ -189,7 +243,7 @@ def add_question():
 
         db.session.commit()
         flash("New question added!")
-        return redirect(url_for('view_assessment'))
+        return redirect(url_for('view_assessment', assessment_id=assessment.id))
     return render_template("add_question.html", form=form, assessment=assessment)
 
 @app.route("/update-order", methods=["POST"])

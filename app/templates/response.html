@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>{{assessment.name}}</h1>
 {% for question in questions %}
     {% set answer = answers_dict.get(question.id) %}
     {% if answer %}

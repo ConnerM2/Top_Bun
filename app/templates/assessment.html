@@ -24,6 +24,9 @@
                 <option value="4">4</option>
                 <option value="5">5</option>
             </select>
+            {% elif question.question_type == "int" %}
+            <label for="question_{{ question.id }}" class="form-label">{{loop.index}}. {{question.question}}</label>
+            <input type="number" name="question_{{ question.id }}" id="question_{{ question.id }}" class="form-control" min="0" step="1">
             {% endif %}
 
        
