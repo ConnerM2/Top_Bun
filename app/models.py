@@ -48,9 +48,12 @@ class Response(db.Model):
                 total += 1
                 if (answer.answer or "").strip().lower() == "yes":
                     score += 1
-        self.question_count = total
-        self.yes_count = score
-        self.percent_score = (score / total) * 100
+        if total == 0:
+            self.percent_score = 0.0
+        elif total > 0:
+            self.question_count = total
+            self.yes_count = score
+            self.percent_score = (score / total) * 100
 
 class Question(db.Model):
     id: so.Mapped[int] = so.mapped_column(primary_key=True)

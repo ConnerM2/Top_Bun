@@ -54,40 +54,87 @@ def dashboard():
         form.month_year.data = my_date.strftime('%Y-%m')  # preselect current month
     responses = Response.query.filter(Response.report_month == my_date).all()
     stores = Store.query.filter_by(is_active=True).all()
+    active_store_ids = []
+    for store in stores:
+        active_store_ids.append(store.id) # Stores on active store id's
 
-    # One column example: "Day Score" = score for form_type "day" per store
-    # Build a lookup: store_id -> percent_score (only for responses that exist)
-    # extra_evals_by_store = {}
-    # for r in responses:
-    #     if r.from_type == "extra":
-    #         extra_evals_by_store[r.store_id] = r.answer
+    EVAL2_ASSESSMENT_ID = 2
+    # eval2_first_question = Question.query.filter_by(assessment_id=EVAL2_ASSESSMENT_ID, is_active=True).order_by(Question.position).first()
+    # eval2_q1_by_store = {}
+    # if eval2_first_question:
+    #     for r in responses:
+    #         if r.assessment_id != EVAL2_ASSESSMENT_ID:
+    #             continue
+    #         for ans in r.answers:
+    #             if ans.question_id == eval2_first_question.id and ans.answer:
+    #                 eval2_q1_by_store[r.store_id] = ans.answer
+                    # break
+
+    eval2_questions = Question.query.filter_by(assessment_id=EVAL2_ASSESSMENT_ID, is_active=True).order_by(Question.position).all()
+    eval2_scores_by_store = {}
+    for r in responses:
+        if r.assessment_id != EVAL2_ASSESSMENT_ID:
+            continue
+        if r.store_id not in eval2_scores_by_store:
+            eval2_scores_by_store[r.store_id] = {}
+        for ans in r.answers:
+            if ans.answer is not None:
+                eval2_scores_by_store[r.store_id][ans.question_id] = ans.answer
 
     day_score_by_store = {}
     for r in responses:
-        if r.form_type == "day":
+        if r.form_type == "day" and r.store_id in active_store_ids:
             day_score_by_store[r.store_id] = r.percent_score
 
     night_score_by_store = {}
     for r in responses:
-        if r.form_type == "night":
+        if r.form_type == "night" and r.store_id in active_store_ids:
             night_score_by_store[r.store_id] = r.percent_score
 
     online_score_by_store = {}
     for r in responses:
-        if r.form_type == "online":
+        if r.form_type == "online" and r.store_id in active_store_ids:
             online_score_by_store[r.store_id] = r.percent_score
-    
-    
 
+
+    def rank_calculator(score_by_store):
+        sorted_score = dict(sorted(score_by_store.items(), key=lambda item: item[1], reverse=True))
+        rank_by_store = {}
+        rank = 10
+        current_score = None
+        tie_count = 0
+        for store in sorted_score:
+            if sorted_score[store] == 0:
+                rank_by_store[store] = 0
+            elif current_score == sorted_score[store]:
+                rank_by_store[store] = rank
+                tie_count += 1
+            else:
+                current_score = sorted_score[store]
+                rank -= tie_count
+                rank_by_store[store] = rank
+                tie_count = 1
+        return rank_by_store
+
+    day_rank = rank_calculator(day_score_by_store)
+    night_rank = rank_calculator(night_score_by_store)
+    online_rank = rank_calculator(online_score_by_store)
+
+    print(eval2_scores_by_store)
+
+
+    
     return render_template(
         "dashboard.html",
         responses=responses,
         stores=stores,
         date=my_date,
         form=form,
-        day_score_by_store=day_score_by_store,
-        night_score_by_store=night_score_by_store,
-        online_score_by_store=online_score_by_store
+        day_rank=day_rank,
+        night_rank=night_rank,
+        online_rank=online_rank,
+        eval2_scores_by_store=eval2_scores_by_store,
+        eval2_questions=eval2_questions,
     )
 
 @app.route('/stores')
@@ -176,6 +223,8 @@ def assessment_page(store_id, assessment_id):
                         answer_text = 'Yes'
                 elif question.question_type == "text":
                     answer_text = request.form.get(f'question_{question.id}')
+                elif question.question_type == "score":
+                    answer_text = request.form.get(f'question_{question.id}')
                 else:
                     answer_text = request.form.get(f'question_{question.id}')
                 if answer_text:
@@ -188,6 +237,7 @@ def assessment_page(store_id, assessment_id):
         except:
             db.session.rollback()
             flash("Error: response already created for this store and time")
+            print('excpet went off')
             return redirect(url_for('store_page', store_id=store_id))
 
     return render_template("assessment.html", assessment=assessment, store=store, form=form, questions=questions)

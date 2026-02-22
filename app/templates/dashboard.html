@@ -29,22 +29,17 @@
           </tr>
         </thead>
         <tbody>
-        {% for store in stores %}
+        {% for store in stores %}    
         <tr>
           <th scope="row">{{ store.location }}</th>
-          <td>{% if store.id in day_score_by_store %}{{ day_score_by_store[store.id] }}{% else %}—{% endif %}</td>
-          <td>{% if store.id in night_score_by_store %}{{night_score_by_store[store.id]}}{%else%}—{%endif%}  </td>
-          <td>{% if store.id in online %}{{online[store.id]}}{%else%}—{%endif%}  </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
-          <td> — </td>
+          <td>{% if store.id in day_rank %}{{ day_rank[store.id] }}{% else %}—{% endif %}</td>
+          <td>{% if store.id in night_rank %}{{night_rank[store.id]}}{%else%}—{%endif%}  </td>
+          <td>{% if store.id in online_rank %}{{online_rank[store.id]}}{%else%}—{%endif%}  </td>
+          {% for question in eval2_questions %}
+          <td>{% if store.id in eval2_scores_by_store and question.id in eval2_scores_by_store[store.id]%}{{eval2_scores_by_store[store.id][question.id]}}{%else%}—{%endif%}</td>
+          {% endfor %}
         </tr>
+        
         {% endfor %}
         </tbody>
       </table>

@@ -23,7 +23,7 @@ class ArchiveQuestions(FlaskForm):
     submit = SubmitField("Archive")
 
 class AddQuestionForm(FlaskForm):
-    question_type = SelectField('Question Type', choices=[('drop_down', 'Score 1-5'), ("yes_no", "Check Box"), ("text", "Text")], validators=[DataRequired()])
+    question_type = SelectField('Question Type', choices=[('drop_down', 'Score 1-5'), ("yes_no", "Check Box"), ("text", "Text"), ('score', 'Score')], validators=[DataRequired()])
     question = StringField("Question", validators=[data_required()])
     submit = SubmitField("Add Question")
 
