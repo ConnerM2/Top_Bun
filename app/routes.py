@@ -75,25 +75,27 @@ def dashboard():
     for r in responses:
         if r.assessment_id != EVAL2_ASSESSMENT_ID:
             continue
-        if r.store_id not in eval2_scores_by_store:
-            eval2_scores_by_store[r.store_id] = {}
         for ans in r.answers:
+            if ans.question_id not in eval2_scores_by_store:
+                eval2_scores_by_store[ans.question_id] = {}
             if ans.answer is not None:
-                eval2_scores_by_store[r.store_id][ans.question_id] = ans.answer
+                eval2_scores_by_store[ans.question_id][r.store_id] = ans.answer
+            
+        print(eval2_scores_by_store)
 
     day_score_by_store = {}
     for r in responses:
-        if r.form_type == "day" and r.store_id in active_store_ids:
+        if r.form_type == "day" and r.store_id in active_store_ids and r.assessment_id != EVAL2_ASSESSMENT_ID: #either add a new form type for eval2 or add a check that checks if response if eval2. I got a random 0 in day collumn
             day_score_by_store[r.store_id] = r.percent_score
 
     night_score_by_store = {}
     for r in responses:
-        if r.form_type == "night" and r.store_id in active_store_ids:
+        if r.form_type == "night" and r.store_id in active_store_ids != EVAL2_ASSESSMENT_ID:
             night_score_by_store[r.store_id] = r.percent_score
 
     online_score_by_store = {}
     for r in responses:
-        if r.form_type == "online" and r.store_id in active_store_ids:
+        if r.form_type == "online" and r.store_id in active_store_ids != EVAL2_ASSESSMENT_ID:
             online_score_by_store[r.store_id] = r.percent_score
 
 
@@ -120,7 +122,13 @@ def dashboard():
     night_rank = rank_calculator(night_score_by_store)
     online_rank = rank_calculator(online_score_by_store)
 
-    print(eval2_scores_by_store)
+    eval2_rank = {}
+    for question in eval2_scores_by_store:
+        eval2_rank[question] = rank_calculator(eval2_scores_by_store[question])
+    
+    
+
+    print(eval2_rank)
 
 
     
@@ -133,7 +141,7 @@ def dashboard():
         day_rank=day_rank,
         night_rank=night_rank,
         online_rank=online_rank,
-        eval2_scores_by_store=eval2_scores_by_store,
+        eval2_rank=eval2_rank,
         eval2_questions=eval2_questions,
     )
 

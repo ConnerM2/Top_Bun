@@ -36,7 +36,7 @@
           <td>{% if store.id in night_rank %}{{night_rank[store.id]}}{%else%}—{%endif%}  </td>
           <td>{% if store.id in online_rank %}{{online_rank[store.id]}}{%else%}—{%endif%}  </td>
           {% for question in eval2_questions %}
-          <td>{% if store.id in eval2_scores_by_store and question.id in eval2_scores_by_store[store.id]%}{{eval2_scores_by_store[store.id][question.id]}}{%else%}—{%endif%}</td>
+          <td>{% if question.id in eval2_rank and store.id in eval2_rank[question.id]%}{{eval2_rank[question.id][store.id]}}{%else%}—{%endif%}</td>
           {% endfor %}
         </tr>
         
