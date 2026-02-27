@@ -71,6 +71,7 @@ def dashboard():
                     # break
 
     eval2_questions = Question.query.filter_by(assessment_id=EVAL2_ASSESSMENT_ID, is_active=True).order_by(Question.position).all()
+    
     eval2_scores_by_store = {}
     for r in responses:
         if r.assessment_id != EVAL2_ASSESSMENT_ID:
@@ -81,11 +82,11 @@ def dashboard():
             if ans.answer is not None:
                 eval2_scores_by_store[ans.question_id][r.store_id] = ans.answer
             
-        print(eval2_scores_by_store)
+        # print(eval2_scores_by_store)
 
     day_score_by_store = {}
     for r in responses:
-        if r.form_type == "day" and r.store_id in active_store_ids and r.assessment_id != EVAL2_ASSESSMENT_ID: #either add a new form type for eval2 or add a check that checks if response if eval2. I got a random 0 in day collumn
+        if r.form_type == "day" and r.store_id in active_store_ids and r.assessment_id != EVAL2_ASSESSMENT_ID: 
             day_score_by_store[r.store_id] = r.percent_score
 
     night_score_by_store = {}
@@ -98,23 +99,27 @@ def dashboard():
         if r.form_type == "online" and r.store_id in active_store_ids != EVAL2_ASSESSMENT_ID:
             online_score_by_store[r.store_id] = r.percent_score
 
-
+    total_by_store = {}
     def rank_calculator(score_by_store):
-        sorted_score = dict(sorted(score_by_store.items(), key=lambda item: item[1], reverse=True))
+        sorted_score = dict(sorted(score_by_store.items(), key=lambda item: item[1], reverse=True)) #change so it does not decrement
         rank_by_store = {}
         rank = 10
         current_score = None
         tie_count = 0
         for store in sorted_score:
+            if store not in total_by_store:
+                total_by_store[store] = 0
             if sorted_score[store] == 0:
                 rank_by_store[store] = 0
             elif current_score == sorted_score[store]:
                 rank_by_store[store] = rank
+                total_by_store[store] += rank
                 tie_count += 1
             else:
                 current_score = sorted_score[store]
                 rank -= tie_count
                 rank_by_store[store] = rank
+                total_by_store[store] += rank
                 tie_count = 1
         return rank_by_store
 
@@ -123,12 +128,30 @@ def dashboard():
     online_rank = rank_calculator(online_score_by_store)
 
     eval2_rank = {}
+    complaints = {}
     for question in eval2_scores_by_store:
-        eval2_rank[question] = rank_calculator(eval2_scores_by_store[question])
-    
+        question_obj = db.session.get(Question, question)
+        if question_obj.score_aggregation == "raw_subtract":
+            print("raw_subtract")
+        else:
+            eval2_rank[question_obj.id] = rank_calculator(eval2_scores_by_store[question_obj.id]) #Find a way to pick out complaint counter and decrement score "Complaint Counter"
+
     
 
-    print(eval2_rank)
+
+    # graph
+    data = []
+    for store in total_by_store:
+        if store not in data:
+            store_obj = db.session.get(Store, store)
+            data.append((store_obj.location, total_by_store[store]))
+
+    labels = [row[0] for row in data]
+    values = [row[1] for row in data]
+    
+    # for question in eval2_questions:
+    #     print(question.question)
+    # print(data)
 
 
     
@@ -143,6 +166,11 @@ def dashboard():
         online_rank=online_rank,
         eval2_rank=eval2_rank,
         eval2_questions=eval2_questions,
+        total_by_store=total_by_store,
+        data=data,
+        labels=labels,
+        values=values,
+        complaints=complaints,
     )
 
 @app.route('/stores')
