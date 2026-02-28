@@ -80,7 +80,7 @@ def dashboard():
             if ans.question_id not in eval2_scores_by_store:
                 eval2_scores_by_store[ans.question_id] = {}
             if ans.answer is not None:
-                eval2_scores_by_store[ans.question_id][r.store_id] = ans.answer
+                eval2_scores_by_store[ans.question_id][r.store_id] = float(ans.answer)
             
         # print(eval2_scores_by_store)
 
@@ -111,6 +111,10 @@ def dashboard():
             if sorted_score[store] == 0:
                 rank_by_store[store] = 0
             elif current_score == sorted_score[store]:
+                rank_by_store[store] = rank
+                total_by_store[store] += rank
+            elif current_score == None:
+                current_score = sorted_score[store]
                 rank_by_store[store] = rank
                 total_by_store[store] += rank
             else:

@@ -26,7 +26,7 @@
             </select>
             {% elif question.question_type == "score" %}
             <label for="question_{{ question.id }}" class="form-label">{{loop.index}}. {{question.question}}</label>
-            <input type="number" name="question_{{ question.id }}" id="question_{{ question.id }}" class="form-control" min="0" step="1">
+            <input type="number" name="question_{{ question.id }}" id="question_{{ question.id }}" class="form-control" min="0" step="any">
             {% endif %}
 
        
