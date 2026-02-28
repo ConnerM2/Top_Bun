@@ -105,7 +105,6 @@ def dashboard():
         rank_by_store = {}
         rank = 10
         current_score = None
-        tie_count = 0
         for store in sorted_score:
             if store not in total_by_store:
                 total_by_store[store] = 0
@@ -114,13 +113,11 @@ def dashboard():
             elif current_score == sorted_score[store]:
                 rank_by_store[store] = rank
                 total_by_store[store] += rank
-                tie_count += 1
             else:
                 current_score = sorted_score[store]
-                rank -= tie_count
                 rank_by_store[store] = rank
                 total_by_store[store] += rank
-                tie_count = 1
+                rank -= 1
         return rank_by_store
 
     day_rank = rank_calculator(day_score_by_store)
@@ -131,13 +128,26 @@ def dashboard():
     complaints = {}
     for question in eval2_scores_by_store:
         question_obj = db.session.get(Question, question)
-        if question_obj.score_aggregation == "raw_subtract":
-            print("raw_subtract")
+        if question_obj.score_aggregation == "raw_subtract" or question_obj.score_aggregation == "raw_add":
+            eval2_rank[question_obj.id] = eval2_scores_by_store[question_obj.id]
         else:
             eval2_rank[question_obj.id] = rank_calculator(eval2_scores_by_store[question_obj.id]) #Find a way to pick out complaint counter and decrement score "Complaint Counter"
 
-    
+    print(eval2_rank)
+    print(f"total: {total_by_store}")
 
+    for question in eval2_rank:
+        question_obj = db.session.get(Question, question)
+        if question_obj.score_aggregation == "raw_subtract":
+            for store_t in total_by_store:
+                for store_e in eval2_rank[question]:
+                    if store_t == store_e:
+                        total_by_store[store_t] -= int(eval2_rank[question][store_e])
+        elif question_obj.score_aggregation == "raw_add":
+            for store_t in total_by_store:
+                for store_e in eval2_rank[question]:
+                    if store_t == store_e:
+                        total_by_store[store_t] += int(eval2_rank[question][store_e])
 
     # graph
     data = []
@@ -252,7 +262,7 @@ def assessment_page(store_id, assessment_id):
             flash("Response created successfully", "success")
             for question in questions:
                 if question.question_type == "yes_no":
-                    yes_no = request.form.get(f'question_{question.id}')
+                    yes_no = request.form.get(f'question_{question.id}') #Why can I only enter in integers for eval 2? No floats
                     if yes_no == None:
                         answer_text = 'No'
                     else:
