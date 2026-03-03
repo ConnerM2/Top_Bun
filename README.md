@@ -8,6 +8,8 @@ Top Bun is a Flask web application for tracking store performance through struct
 - **Responses and scoring**: Capture responses, automatically calculate percent scores, and rank stores.
 - **Dashboard**: View monthly performance, rankings by form type, and aggregated scores per store.
 
+![Planck vs Rayleigh–Jeans](images/dashboard.png)
+
 ### Tech stack
 - **Backend**: Python, Flask
 - **Database**: SQLite with SQLAlchemy ORM
