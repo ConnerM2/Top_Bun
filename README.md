@@ -8,7 +8,7 @@ Top Bun is a Flask web application for tracking store performance through struct
 - **Responses and scoring**: Capture responses, automatically calculate percent scores, and rank stores.
 - **Dashboard**: View monthly performance, rankings by form type, and aggregated scores per store.
 
-![Planck vs Rayleigh–Jeans](images/dashboard.png)
+![Top Bun dashboard](images/dashboard.png)
 
 ### Tech stack
 - **Backend**: Python, Flask
@@ -22,36 +22,51 @@ git clone https://github.com/your-username/Top_Bun.git
 cd TopBun
 ```
 ### 2. Create and activate virtual environment
-(powershell)
+Windows (PowerShell):
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
-(macOS/Linux)
-```
+macOS / Linux:
+```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 ### 3. Install dependencies
-```bask
-pip install -r requirments.txt
-```
-### 4. Configuration
-Override SECRET_KEY
 ```bash
-set SECRET_KEY=some-dev-secret           # Windows
-export SECRET_KEY=some-dev-secret        # macOS/Linux
+pip install -r requirements.txt
 ```
-Override db URL
+
+### 4. Configuration (optional for local dev)
+
+Windows (PowerShell):
+```powershell
+$env:SECRET_KEY = "some-dev-secret"
+$env:DATABASE_URL = "sqlite:///app.db"
+```
+
+Windows (cmd.exe):
+```bat
+set SECRET_KEY=some-dev-secret
+set DATABASE_URL=sqlite:///app.db
+```
+
+macOS / Linux:
 ```bash
-set DATABASE_URL=postgresql://user:pass@localhost/dbname     # Windows
-export DATABASE_URL=postgresql://user:pass@localhost/dbname  # macOS/Linux
+export SECRET_KEY=some-dev-secret
+export DATABASE_URL=sqlite:///app.db
 ```
-### 5. initialize the database
-`flask --app top_bun.py db upgrade`
-### 6. Run
-`flask --app top_bun.py run`
 
+### 5. Initialize the database
+Run the database migrations to create `app.db`:
 
+```bash
+flask --app top_bun.py db upgrade
+```
 
+### 6. Run the development server
+```bash
+flask --app top_bun.py run
+```
 
+Then open `http://127.0.0.1:5000/` in your browser.
