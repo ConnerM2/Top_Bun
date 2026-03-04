@@ -37,36 +37,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Configuration (optional for local dev)
-
-Windows (PowerShell):
-```powershell
-$env:SECRET_KEY = "some-dev-secret"
-$env:DATABASE_URL = "sqlite:///app.db"
-```
-
-Windows (cmd.exe):
-```bat
-set SECRET_KEY=some-dev-secret
-set DATABASE_URL=sqlite:///app.db
-```
-
-macOS / Linux:
-```bash
-export SECRET_KEY=some-dev-secret
-export DATABASE_URL=sqlite:///app.db
-```
-
-### 5. Initialize the database
+### 4. Initialize the database
 Run the database migrations to create `app.db`:
 
 ```bash
-flask --app top_bun.py db upgrade
+flask db upgrade
 ```
 
-### 6. Run the development server
+### 5. Run the development server
 ```bash
-flask --app top_bun.py run
+flask run
 ```
 
 Then open `http://127.0.0.1:5000/` in your browser.
