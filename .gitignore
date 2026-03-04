@@ -1,5 +1,4 @@
 __pycache__/
-config.py
 .env
 .env.*
 venv/
@@ -9,4 +8,3 @@ instance/
 *.db
 *.sqlite3
 uploads/
-.flaskenv
