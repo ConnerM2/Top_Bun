@@ -15,7 +15,7 @@ Top Bun is a Flask web application for tracking store performance through struct
 - **Database**: SQLite with SQLAlchemy ORM
 - **Forms**: Flask-WTF / WTForms
 
-## Run locally (Working on getting fixed)
+## Run locally
 ### 1. Clone repo
 ```bash
 git clone https://github.com/your-username/Top_Bun.git
