@@ -23,12 +23,12 @@ class ArchiveQuestions(FlaskForm):
     submit = SubmitField("Archive")
 
 class AddQuestionForm(FlaskForm):
-    question_type = SelectField('Question Type', choices=[('drop_down', 'Score 1-5'), ("yes_no", "Check Box"), ("text", "Text"), ('score', 'Score')], validators=[DataRequired()])
+    question_type = SelectField('Question Type', choices=[("yes_no", "Check Box"), ('score', 'Extra score')], validators=[DataRequired()])
     question = StringField("Question", validators=[data_required()])
     submit = SubmitField("Add Question")
 
 class SelectForm(FlaskForm):
-    form_type = SelectField('Form Type', choices=[('day', 'Day'), ('night', 'Night'), ('online', 'Online'), ('extra', 'Extra')])
+    form_type = SelectField('Form Type', choices=[('day', 'Day'), ('night', 'Night'), ('online', 'Online')])
     assessments = SelectField('Assessment', choices=[], validators=[DataRequired()])
     month_year = SelectField('Month', choices=[], validators=[DataRequired()])
     submit = SubmitField("Select Form")
