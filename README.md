@@ -37,14 +37,19 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 4. Initialize the database
-Run the database migrations to create `app.db`:
+### 4. Clone example database
+After cloning run:
+```bash
+Copy-Item .\app.demo.db .\app.db
+```
 
+### 5. Initialize the database
+Run the database migrations to create `app.db`:
 ```bash
 flask db upgrade
 ```
 
-### 5. Run the development server
+### 6. Run the development server
 ```bash
 flask run
 ```
