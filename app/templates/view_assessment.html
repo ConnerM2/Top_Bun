@@ -7,31 +7,33 @@
   {{select_ass.choice_assessment.label}} {{select_ass.choice_assessment}}
   {{select_ass.submit()}}
 </form>
-<div class="container">
 
+
+<div class="container">
     <!-- This is the ONE sortable container -->
     <div id="question-list" class="list-group">
 
         {% for question in questions %}
-        <div class="list-group-item d-flex justify-content-between align-items-center"
-             data-id="{{ question.id }}">
+        {{question.category}}
+          <div class="list-group-item d-flex justify-content-between align-items-center"
+              data-id="{{ question.id }}">
 
-            <div>
-                {{ question.question }}
-                <small class="text-muted">({{ question.position }})</small>
-            </div>
+              <div>
+                  {{ question.question }}
+                  <small class="text-muted">({{ question.position }})</small>
+              </div>
 
-            <form method="post">
-                {{ form.hidden_tag() }}
-                <button class="btn btn-danger btn-sm"
-                        name="question_id"
-                        value="{{ question.id }}"
-                        type="submit">
-                    Delete
-                </button>
-            </form>
+              <form method="post">
+                  {{ form.hidden_tag() }}
+                  <button class="btn btn-danger btn-sm"
+                          name="question_id"
+                          value="{{ question.id }}"
+                          type="submit">
+                      Delete
+                  </button>
+              </form>
 
-        </div>
+          </div>
         {% endfor %}
 
     </div>

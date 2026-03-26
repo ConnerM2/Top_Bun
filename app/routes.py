@@ -6,6 +6,7 @@ from app.forms import LoginForm, AssessmentForm, AddStoreForm, ArchiveForm, AddQ
 from wtforms import StringField
 from sqlalchemy import engine, func
 from datetime import date, datetime
+from collections import defaultdict
 
 
 def get_month_year_choices():
@@ -319,6 +320,13 @@ def view_assessment():
     questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all() if assessment else []
     form = ArchiveQuestions()
 
+    questionByCategory = defaultdict(list)
+    for question in questions:
+        questionByCategory[question.category].append(question)
+
+    for q in questionByCategory:
+        print(questionByCategory[q])
+
     if form.validate_on_submit():
         question_id = request.form.get('question_id')
         question = Question.query.get_or_404(question_id)
@@ -326,7 +334,7 @@ def view_assessment():
         question.position = 0
         db.session.commit()
         return redirect(url_for("view_assessment", assessment_id=assessment.id))
-    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form, select_ass=select_ass)
+    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form, select_ass=select_ass, questionByCategory=questionByCategory)
 
 @app.route('/assessment/<int:assessment_id>/add_question', methods=["GET", "POST"])
 def add_question(assessment_id):
@@ -337,8 +345,9 @@ def add_question(assessment_id):
     if form.validate_on_submit():
         q_type = request.form.get('question_type')
         q = request.form.get('question')
+        category = request.form.get('category')
         position = (max_position or 0) + 1
-        question = Question(assessment_id=assessment.id, question_type=q_type, question=q, position=position)
+        question = Question(assessment_id=assessment.id, question_type=q_type, question=q, position=position, category=category)
         db.session.add(question)
 
         db.session.commit()
