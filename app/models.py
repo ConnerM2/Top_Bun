@@ -63,6 +63,13 @@ class Question(db.Model):
     is_active: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True, index=True)
     position: so.Mapped[int] = so.mapped_column(sa.Integer, default=0)
     score_aggregation: so.Mapped[str] = so.mapped_column(sa.String(64), server_default="ranked", nullable=False) #This allows us to specify how we want the quesiton to be totaled.
+    category: so.Mapped[str] = so.mapped_column(
+        sa.String(64),
+        index=True,
+        nullable=False,
+        default="Misc",
+        server_default="Misc",
+    )
 
     answers = db.relationship("Answer", backref="question", cascade="all, delete-orphan", passive_deletes=True)
 
