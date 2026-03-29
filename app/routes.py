@@ -358,10 +358,9 @@ def add_question(assessment_id):
 @app.route("/update-order", methods=["POST"])
 def update_order():
     data = request.get_json()
-
     for item in data:
         question = Question.query.get(item["id"])
         question.position = item["position"]
-
+        question.category = item["category"]  # add this line
     db.session.commit()
-    return jsonify({"status": "success"})
+    return "", 204
