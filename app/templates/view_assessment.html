@@ -11,43 +11,48 @@
 
 <div class="container">
 
-  {% for category, cat_questions in questionByCategory.items() %}
+  {%for cat in setCategories%}
   <div class="category-section mb-4">
-    
     <!-- Non-draggable category header -->
     <div class="category-header">
-      <h6 class="mb-0">{{ category or "Uncategorized" }}</h6>
+      <h6 class="mb-0">{{cat}}</h6>
     </div>
 
-    <!-- Each category gets its own sortable list -->
-    <div class="question-list list-group" data-category="{{ category }}">
+    <div class="question-list list-group" data-category={{cat}}>
+      {# Make a new div that holds all the questions for each category #}
+      {# This is the outer wrapper that holds the entire categfdaory #}
+      <div class="category-section mb-4">
+        <!-- Each category gets its own sortable list -->
+        {# Make a new sortable div for current category #}
+        <div class="question-list list-group" data-category="{{ cat }}"> 
 
-      {% for question in cat_questions %}
-      <div class="list-group-item d-flex justify-content-between align-items-center"
-           data-id="{{ question.id }}">
+          {% for question in questionByCategory[cat] %}
+          {# Make a new div for each question for the current category #}
+          <div class="list-group-item d-flex justify-content-between align-items-center"
+              data-id="{{ question.id }}">
 
-        <div>
-          {{ question.question }}
-          <small class="text-muted">({{ question.position }})</small>
+            <div>
+              {{ question.question }}
+              <small class="text-muted">({{ question.position }})</small>
+            </div>
+
+            <form method="post">
+              {{ form.hidden_tag() }}
+              <button class="btn btn-danger btn-sm"
+                      name="question_id"
+                      value="{{ question.id }}"
+                      type="submit">
+                Delete
+              </button>
+            </form>
+
+          </div>
+          {% endfor %}
         </div>
-
-        <form method="post">
-          {{ form.hidden_tag() }}
-          <button class="btn btn-danger btn-sm"
-                  name="question_id"
-                  value="{{ question.id }}"
-                  type="submit">
-            Delete
-          </button>
-        </form>
-
       </div>
-      {% endfor %}
-
     </div>
   </div>
-  {% endfor %}
-
+  {%endfor%}
 </div>
 
     {% if assessment %}
@@ -70,7 +75,11 @@ function collectOrder() {
   const allItems = document.querySelectorAll('.question-list .list-group-item');
   const order = [];
 
+  // Loop through each item in allItems and keep track of the loop index
   allItems.forEach((item, index) => {
+    // Make an object for each question with the question id, position, and category
+    // ie {id: 1, postion: 5, category: front}
+    // Add that to the order list
     order.push({
       id: item.dataset.id,
       position: index,
@@ -78,15 +87,24 @@ function collectOrder() {
       category: item.closest('.question-list').dataset.category
     });
   });
-
   return order;
 }
 
 function syncOrder() {
+  // update-order is a route in the routes page
+  // When this funciton is called (When ever you grag and drop a item) it runs the collectOrder function
+  // Data gets sent to backend
   fetch("/update-order", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(collectOrder())
+    // It will then return a array that look like:
+    /*
+    [
+      { id: "1", position: 0, category: "front" },
+      { id: "2", position: 1, category: "back" }
+    ]
+    */
   });
 }
 
@@ -95,7 +113,7 @@ document.querySelectorAll('.question-list').forEach(list => {
   new Sortable(list, {
     group: 'questions',   // same group name = cross-category dragging enabled
     animation: 150,
-    onEnd: syncOrder
+    onEnd: syncOrder //This tells syncOrder to run anytime a item is drag and dropped
   });
 });
 </script>

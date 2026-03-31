@@ -320,12 +320,11 @@ def view_assessment():
     questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all() if assessment else []
     form = ArchiveQuestions()
 
+    setCategories = ["Front", "Back", "Outside", "Bathroom", "Misc"]
+
     questionByCategory = defaultdict(list)
     for question in questions:
         questionByCategory[question.category].append(question)
-
-    for q in questionByCategory:
-        print(questionByCategory[q])
 
     if form.validate_on_submit():
         question_id = request.form.get('question_id')
@@ -334,7 +333,7 @@ def view_assessment():
         question.position = 0
         db.session.commit()
         return redirect(url_for("view_assessment", assessment_id=assessment.id))
-    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form, select_ass=select_ass, questionByCategory=questionByCategory)
+    return render_template("view_assessment.html", assessment=assessment, questions=questions, form=form, select_ass=select_ass, questionByCategory=questionByCategory, setCategories=setCategories)
 
 @app.route('/assessment/<int:assessment_id>/add_question', methods=["GET", "POST"])
 def add_question(assessment_id):
