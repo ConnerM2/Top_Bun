@@ -1,66 +1,71 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1> {{store.location}} </h1>
-    {% for response in store.responses %}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <ul class="list-group">
-                    <li class="list-group-item"><a href="/stores/{{store.id}}/res{{response.id}}" style="text-decoration: none;">response_{{loop.index}} - {{response.timestamp.strftime("%b %d, %Y %I:%M %p")}} {{response.assessment_id}} {{response.form_type}} {{response.report_month}} </a></li>
-                </ul>  
-            </div>
-            {% endfor %}
+<h1> {{store.location}} </h1>
+{% for response in store.responses %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <ul class="list-group">
+                <li class="list-group-item"><a href="/stores/{{store.id}}/res{{response.id}}"
+                        style="text-decoration: none;">response_{{loop.index}} - {{response.timestamp.strftime("%b %d,
+                        %Y %I:%M %p")}} {{response.assessment_id}} {{response.form_type}} {{response.report_month}} </a>
+                </li>
+            </ul>
         </div>
-        <div class="row">
-            
-
-    <!-- Button trigger modal -->
-    <div class="mt-3">
-        <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="" class="btn btn-primary">New Store Eval</a>
+        {% endfor %}
     </div>
-    
-    <!-- Modal -->
+    <div class="row">
+
+
+        <!-- Button trigger modal -->
+        <div class="mt-3">
+            <a type="button" data-bs-toggle="modal" data-bs-target="#exampleModal" href="" class="btn btn-primary">New
+                Store Eval</a>
+        </div>
+
+        <!-- Modal -->
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Select Form</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Select Form</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="" method="post">
+                            {{ select_form.hidden_tag() }}
+                            {{ select_form.assessments.label }} {{ select_form.assessments }}
+                            {{ select_form.form_type.label }} {{ select_form.form_type }}
+                            {{ select_form.year.label }} {{ select_form.year }}
+                            {{ select_form.month.label }} {{ select_form.month }}
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Select Form</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-body">
-                <form action="" method="post">
-                    {{ select_form.hidden_tag() }}
-                    {{ select_form.assessments.label }} {{ select_form.assessments }}
-                    {{ select_form.form_type.label }} {{ select_form.form_type }}
-                    {{ select_form.month_year.label }} {{ select_form.month_year }}
-                    
-                
-                </div>
-                <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Select Form</button>
-                </form>
-                </div>
-            </div>
             </div>
         </div>
 
-        
-        
 
-        
+
+
+
         <div class="mt-3">
             <form action="" method="post">
                 {{ archive.hidden_tag() }}
-                <button type="submit" class="btn btn-danger">Archive Store</button> 
-            </form>   
+                <button type="submit" class="btn btn-danger">Archive Store</button>
+            </form>
         </div>
-        </div>                         
-        
     </div>
-    
-    
+
+</div>
+
+
 
 
 {% endblock %}

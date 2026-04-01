@@ -222,17 +222,17 @@ def add_store():
 def store_page(store_id):
     store = Store.query.get_or_404(store_id)
     select_form = SelectForm()
-    select_form.month_year.choices = get_month_year_choices()
+    select_form.year.choices = getYears()
     select_form.assessments.choices = [(a.id, a.name) for a in Assessment.query.all()]
     #drop down menus have two options. (value: what is sent to backend, label: what the user sees)
 
     if select_form.validate_on_submit():
         form_type = select_form.form_type.data
         assessment_id = select_form.assessments.data
-        value = select_form.month_year.data
-        if value:
-            y, m = int(value[:4]), int(value[5:7])
-            my_date = date(y, m, 1)
+        year = int(select_form.year.data)
+        month = int(select_form.month.data)
+        if year and month:
+            my_date = date(year, month, 1)
 
         return redirect(url_for('assessment_page', store_id=store.id, form_type=form_type, assessment_id=assessment_id, my_date=my_date))
 

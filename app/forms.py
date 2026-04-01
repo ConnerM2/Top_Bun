@@ -31,7 +31,8 @@ class AddQuestionForm(FlaskForm):
 class SelectForm(FlaskForm):
     form_type = SelectField('Form Type', choices=[('day', 'Day'), ('night', 'Night'), ('online', 'Online')])
     assessments = SelectField('Assessment', choices=[], validators=[DataRequired()])
-    month_year = SelectField('Month', choices=[], validators=[DataRequired()])
+    month = SelectField('Month', choices=[('01', 'Jan'),('02', 'Feb'),('03', 'Mar'),('04', 'April'),('05', 'May'),('06', 'June'),('07', 'July'),('08', 'Aug'),('09', 'Sep'),('10', 'Oct'),('11', 'Nov'),('12', 'Dec'),], validators=[DataRequired()])
+    year = SelectField('Year', choices=[], validators=[DataRequired()])
     submit = SubmitField("Select Form")
 
 class AssessmentSelectForm(FlaskForm):
