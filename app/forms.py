@@ -40,5 +40,6 @@ class AssessmentSelectForm(FlaskForm):
 
 class MonthYearForm(FlaskForm):
     """Month/year dropdown - choices are set in the view to last 12 months."""
-    month_year = SelectField('Month', choices=[], validators=[DataRequired()])
+    month = SelectField('Month', choices=[('01', 'Jan'),('02', 'Feb'),('03', 'Mar'),('04', 'April'),('05', 'May'),('06', 'June'),('07', 'July'),('08', 'Aug'),('09', 'Sep'),('10', 'Oct'),('11', 'Nov'),('12', 'Dec'),], validators=[DataRequired()])
+    year = SelectField('Year', choices=[], validators=[DataRequired()])
     submit = SubmitField("Go")

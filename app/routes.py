@@ -23,6 +23,18 @@ def get_month_year_choices():
             month -= 1
     return choices
 
+def getYears():
+    today = date.today()
+    year = today.year
+
+    choices = []
+
+    for _ in range(12):
+        choices.append(year)
+        year -= 1
+    
+    return choices
+
 @app.context_processor
 def get_stores():
     stores = Store.query.all()
@@ -44,15 +56,15 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
     form = MonthYearForm()
-    form.month_year.choices = get_month_year_choices()
+    form.year.choices = getYears()
     my_date = date.today().replace(day=1)  # default: current month
     if form.validate_on_submit():
-        value = form.month_year.data  # e.g. '2026-02'
-        if value:
-            y, m = int(value[:4]), int(value[5:7])
-            my_date = date(y, m, 1)
-    elif request.method == 'GET' and not form.month_year.data:
-        form.month_year.data = my_date.strftime('%Y-%m')  # preselect current month
+        year = int(form.year.data)  
+        month = int(form.month.data)
+        if year and month:
+            my_date = date(year, month, 1)
+    elif request.method == 'GET' and not form.year.data or not form.month.data:
+        form.year.data = my_date.strftime('%Y-%m')  # preselect current month
     responses = Response.query.filter(Response.report_month == my_date).all()
     stores = Store.query.filter_by(is_active=True).all()
     active_store_ids = []

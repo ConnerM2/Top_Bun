@@ -1,46 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
+<div class="container">
 
-    <form method="post" action="{{ url_for('dashboard') }}" class="mb-4">
-        {{ form.hidden_tag() }}
-        {{ form.month_year.label }} {{ form.month_year }}
-        {{ form.submit() }}
-    </form>
+  <form method="post" action="{{ url_for('dashboard') }}" class="mb-4">
+    {{ form.hidden_tag() }}
+    {{ form.year.label }} {{ form.year }}
+    {{ form.month.label }} {{ form.month }}
+    {{ form.submit() }}
+  </form>
 
 
 
-    <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Store</th>
-            <th scope="col">Day Score</th>
-            <th scope="col">Night Score</th>
-            <th scope="col">Online Score</th>
-            {%for question in eval2_questions%}
-            <th scope="col">{{question.question}} </th>
-            {%endfor%}
-            <th scope="col">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-        {% for store in stores %}    
-        <tr>
-          <th scope="row">{{ store.location }}</th>
-          <td>{% if store.id in day_rank %}{{ day_rank[store.id] }}{% else %}—{% endif %}</td>
-          <td>{% if store.id in night_rank %}{{night_rank[store.id]}}{%else%}—{%endif%}  </td>
-          <td>{% if store.id in online_rank %}{{online_rank[store.id]}}{%else%}—{%endif%}  </td>
-          {% for question in eval2_questions %}
-          <td>{% if question.id in eval2_rank and store.id in eval2_rank[question.id]%}{{eval2_rank[question.id][store.id]|int}}{%else%}—{%endif%}</td>
-          {% endfor %}
-          <td>{% if store.id in total_by_store %}{{total_by_store[store.id]}}{%else%}—{%endif%} </td>
-        </tr>
-        
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Store</th>
+        <th scope="col">Day Score</th>
+        <th scope="col">Night Score</th>
+        <th scope="col">Online Score</th>
+        {%for question in eval2_questions%}
+        <th scope="col">{{question.question}} </th>
+        {%endfor%}
+        <th scope="col">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for store in stores %}
+      <tr>
+        <th scope="row">{{ store.location }}</th>
+        <td>{% if store.id in day_rank %}{{ day_rank[store.id] }}{% else %}—{% endif %}</td>
+        <td>{% if store.id in night_rank %}{{night_rank[store.id]}}{%else%}—{%endif%} </td>
+        <td>{% if store.id in online_rank %}{{online_rank[store.id]}}{%else%}—{%endif%} </td>
+        {% for question in eval2_questions %}
+        <td>{% if question.id in eval2_rank and store.id in
+          eval2_rank[question.id]%}{{eval2_rank[question.id][store.id]|int}}{%else%}—{%endif%}</td>
         {% endfor %}
-        </tbody>
-      </table>
-  </div>
+        <td>{% if store.id in total_by_store %}{{total_by_store[store.id]}}{%else%}—{%endif%} </td>
+      </tr>
+
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -57,19 +59,19 @@
     type: 'bar',
     data: {
       labels: {{ labels | safe }},
-      datasets: [{
-        label: 'Total Score by Store',
-        data: {{ values | safe }},
-        borderWidth: 1
+    datasets: [{
+      label: 'Total Score by Store',
+      data: {{ values | safe }},
+    borderWidth: 1
       }]
     },
     options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
+    scales: {
+      y: {
+        beginAtZero: true
       }
     }
+  }
   });
 </script>
 {% endblock %}
