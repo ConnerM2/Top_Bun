@@ -58,11 +58,13 @@ def dashboard():
     form = MonthYearForm()
     form.year.choices = getYears()
     my_date = date.today().replace(day=1)  # default: current month
+    headerDate = my_date.strftime("%B %Y")
     if form.validate_on_submit():
         year = int(form.year.data)  
         month = int(form.month.data)
         if year and month:
             my_date = date(year, month, 1)
+            headerDate = my_date.strftime("%B %Y")
     elif request.method == 'GET' and not form.year.data or not form.month.data:
         form.year.data = my_date.strftime('%Y-%m')  # preselect current month
     responses = Response.query.filter(Response.report_month == my_date).all()
@@ -198,6 +200,7 @@ def dashboard():
         labels=labels,
         values=values,
         complaints=complaints,
+        headerDate=headerDate
     )
 
 @app.route('/stores')
@@ -332,7 +335,7 @@ def view_assessment():
     questions = Question.query.filter_by(assessment_id=assessment.id, is_active=True).order_by(Question.position).all() if assessment else []
     form = ArchiveQuestions()
 
-    setCategories = ["Front", "Back", "Outside", "Bathroom", "Misc"]
+    setCategories = ["Outside", "Front", "SandwichUnit", "BreadQuality", "SandwichQuality", "CustomerService", "BackofStore", "Bathrooms", "Misc"]
 
     questionByCategory = defaultdict(list)
     for question in questions:

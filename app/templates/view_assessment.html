@@ -19,7 +19,7 @@
       <h6 class="mb-0">{{cat}}</h6>
     </div>
 
-    <div class="question-list list-group" data-category={{cat}}>
+    {# <div class="question-list list-group" data-category={{cat}}> #}
       {# Make a new div that holds all the questions for each category #}
       {# This is the outer wrapper that holds the entire categfdaory #}
       <div class="category-section mb-4">
@@ -47,7 +47,8 @@
           {% endfor %}
         </div>
       </div>
-    </div>
+      {#
+    </div> #}
   </div>
   {%endfor%}
 </div>

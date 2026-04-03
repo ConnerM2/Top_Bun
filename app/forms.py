@@ -25,7 +25,7 @@ class ArchiveQuestions(FlaskForm):
 class AddQuestionForm(FlaskForm):
     question_type = SelectField('Question Type', choices=[("yes_no", "Check Box"), ('score', 'Extra score')], validators=[DataRequired()])
     question = StringField("Question", validators=[data_required()])
-    category = SelectField('Category', choices=[("Outside", "Outside"), ("Front of Store", "Front of Store")])
+    category = SelectField('Category', choices=[("Outside", "Outside"), ("Front", "Front of Store"),("Sandwich Unit", "Sandwich Unit"),("Bread Quality", "Bread Quality"),("Sandwich Quality", "Sandwich Quality"),("Customer Service", "Customer Service"),("Back of Store", "Back of Store"),("Bathrooms", "Bathrooms")])
     submit = SubmitField("Add Question")
 
 class SelectForm(FlaskForm):
